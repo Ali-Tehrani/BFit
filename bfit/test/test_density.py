@@ -26,6 +26,7 @@ from bfit.density import SlaterAtoms
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal, assert_raises
 import scipy
+from bfit.grid import ClenshawRadialGrid
 
 
 def slater(e, n, r, derivative=False):
@@ -87,33 +88,50 @@ def test_positive_definite_kinetic_energy_he():
     # load he atomic wave function
     he = SlaterAtoms("he")
     # compute density on an equally distant grid
-    grid = np.arange(0., 30.0, 0.0001)
-    energ = he.lagrangian_kinetic_energy(grid)
-    integral = np.trapz(energ * 4 * np.pi * grid**2.0, grid)
-    assert np.all(np.abs(integral - he.kinetic_energy) < 1e-4)
+    grid = ClenshawRadialGrid(4, 30000, 35000)
+    energ = he.lagrangian_kinetic_energy(grid.points)
+    integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
+    assert np.all(np.abs(integral - he.kinetic_energy) < 1e-5)
 
 
-def test_positive_definite_kinetic_energy_be():
-    r"""Test integral of kinetic energy density of beryllium against actual value."""
+def test_positive_definite_kinetic_energy_li():
     # load be atomic wave function
-    be = SlaterAtoms("be")
+    be = SlaterAtoms("li")
     # compute density on an equally distant grid
-    grid = np.arange(0., 30.0, 0.0001)
-    energ = be.lagrangian_kinetic_energy(grid)
-    integral = np.trapz(energ * 4 * np.pi * grid**2.0, grid)
+    grid = ClenshawRadialGrid(3, 20000, 35000)
+    energ = be.lagrangian_kinetic_energy(grid.points)
+    integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
     assert np.all(np.abs(integral - be.kinetic_energy) < 1e-5)
 
 
-def test_positive_definite_kinetic_energy_most_atoms():
-    r"""Test integral of kinetic energy density of various atoms against actual value."""
+def test_positive_definite_kinetic_energy_c():
+    # load be atomic wave function
+    be = SlaterAtoms("c")
+    # compute density on an equally distant grid
+    grid = ClenshawRadialGrid(6, 20000, 35000)
+    energ = be.lagrangian_kinetic_energy(grid.points)
+    integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
+    assert np.all(np.abs(integral - be.kinetic_energy) < 1e-5)
+
+
+def test_positive_definite_kinetic_energy_p():
+    # load be atomic wave function
+    be = SlaterAtoms("p")
+    # compute density on an equally distant grid
+    grid = ClenshawRadialGrid(15, 20000, 35000)
+    energ = be.lagrangian_kinetic_energy(grid.points)
+    integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
+    assert np.all(np.abs(integral - be.kinetic_energy) < 1e-5)
+
+
+def test_positive_definite_kinetic_energy_ag():
     # load c atomic wave function
-    for atom in ["b", "cl", "ag"]:
-        adens = SlaterAtoms(atom)
-        # compute density on an equally distant grid
-        grid = np.arange(0., 30., 0.0001)
-        energ = adens.lagrangian_kinetic_energy(grid)
-        integral = np.trapz(energ * 4.0 * np.pi * grid**2.0, grid)
-        assert np.all(np.abs(integral - adens.kinetic_energy) < 1e-3)
+    adens = SlaterAtoms("ag")
+    # compute density on ClenshawCurtis Grid
+    grid = ClenshawRadialGrid(47, 20000, 35000)
+    energ = adens.lagrangian_kinetic_energy(grid.points)
+    integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
+    assert np.all(np.abs(integral - adens.kinetic_energy) < 1e-3)
 
 
 def test_phi_derivative_lcao_b():

@@ -392,7 +392,7 @@ class SlaterAtoms:
         """
         kinetic = np.zeros((len(points),))
         orbital_to_angular = {
-            "S" : 0.0, "P" : 2.0, "D" : 6.0, "F" : 12.0
+            "S": 0.0, "P": 2.0, "D": 6.0, "F": 12.0
         }
         # The following integrals are obtained from Slater-Type orbital from Wikiepdia.
         #  The formula between two slater-type orbitals with numbers nlm, and numbers qkp is
