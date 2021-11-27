@@ -385,38 +385,50 @@ class SlaterAtoms:
         energy : ndarray, (N,)
             The kinetic energy on the grid points.
 
+        Notes
+        -----
+        - This sets kinetic energy value at r=zero to zero.
+        
         """
-        phi_matrix = np.zeros((len(points), len(self.orbitals)))
+        kinetic = np.zeros((len(points),))
+        orbital_to_angular = {
+            "S" : 0.0, "P" : 2.0, "D" : 6.0, "F" : 12.0
+        }
+        # The following integrals are obtained from Slater-Type orbital from Wikiepdia.
+        #  The formula between two slater-type orbitals with numbers nlm, and numbers qkp is
+        #   $\delta_{lk}\delta_{mp} e^(-(\alpha_1 + \alpha_2) r * \bigg[
+        #       [k(k + 1) - q(q-1)]r^{n+q-2.0} + 2\alpha_2 q r^{n + q - 1.0} - \alpha_2^2r^{n + q}
+        #   bigg] / 2.0$
         for index, orbital in enumerate(self.orbitals):
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
-            # Take second derivative of the Slater-Type Orbitals without division by r^2
-            slater = SlaterAtoms.slater_orbital(exps, number, points)
-            # derivative
-            deriv_pref = (number.T - 1.) - exps.T * np.reshape(points, (points.shape[0], 1))
-            deriv = deriv_pref * slater
-            phi_matrix[:, index] = np.dot(deriv, self.orbitals_coeff[orbital]).ravel()
+            angular = orbital_to_angular[orbital[1]]  # Angular number l(l + 1)
 
-        angular = []  # Angular numbers are l(l + 1)
-        for index, orbital in enumerate(self.orbitals):
-            if "S" in orbital:
-                angular.append(0.)
-            elif "P" in orbital:
-                angular.append(2.)
-            elif "D" in orbital:
-                angular.append(6.)
-            elif "F" in orbital:
-                angular.append(12.)
+            # Calculate  e^(-(\alpha_1 + \alpha_2) r * coeffs_1 * coeffs_2 * norm_1 * norm_2
+            norm = np.ravel(np.power(2. * exps, number) * np.sqrt((2. * exps) / factorial(2. * number)))
+            coeffs_norm = np.einsum("i,i,j,j->ij", np.ravel(self.orbitals_coeff[orbital]),
+                                    norm, np.ravel(self.orbitals_coeff[orbital]), norm)
+            exps_comb = exps + np.ravel(exps)
+            exponential = np.exp(-np.einsum("ij,k->ijk", exps_comb, points))
+            combination = np.einsum("ijk,ij->ijk", exponential, coeffs_norm)
+            number_combs = number + np.ravel(number)
 
-        orb_occs = self.orbitals_occupation
-        energy = np.dot(phi_matrix**2., orb_occs).ravel() / 2.
-        # Add other term
-        molecular = self.phi_matrix(points)**2. * np.array(angular)
-        energy += np.dot(molecular, orb_occs).ravel() / 2.
+            # Calculate [k(k + 1) - q(q-1)]r^{n+q-2.0}
+            points_power = points[:, None, None]**(number_combs - 2.0)
+            first_term = np.einsum("i,kij->ijk", np.ravel(angular - number * (number - 1.0)),points_power)
+            # Calculate + 2\alpha_2 q r^{n + q - 1.0}
+            points_power = points[:, None, None]**(number_combs - 1.0)
+            second_term = np.einsum("j,j,kij->ijk", 2.0 * np.ravel(exps), np.ravel(number), points_power)
+            # Calculate - \alpha_2^2r^{n + q}
+            points_power = points[:, None, None]**(number_combs)
+            third_term = np.einsum("i,kij->ijk", np.ravel(exps)**2.0, points_power)
+
+            combination = combination * (first_term + second_term - third_term)
+            kinetic += np.einsum("ijk->k", combination) * self.orbitals_occupation[index]
         # Divide by r^2 and set division by zero to zero.
         with np.errstate(divide='ignore'):
-            energy /= (points**2.0)
-            energy[np.abs(points) < 1e-10] = 0.
-        return energy / (4.0 * np.pi)
+            kinetic /= (points ** 2.0)
+            kinetic[np.abs(points) < 1e-10] = 0.
+        return kinetic / (2.0 * 4.0 * np.pi)
 
     def derivative_density(self, points):
         r"""
