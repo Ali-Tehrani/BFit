@@ -404,7 +404,9 @@ class SlaterAtoms:
             angular = orbital_to_angular[orbital[1]]  # Angular number l(l + 1)
 
             # Calculate  e^(-(\alpha_1 + \alpha_2) r * coeffs_1 * coeffs_2 * norm_1 * norm_2
-            norm = np.ravel(np.power(2. * exps, number) * np.sqrt((2. * exps) / factorial(2. * number)))
+            norm = np.ravel(
+                np.power(2. * exps, number) * np.sqrt((2. * exps) / factorial(2. * number))
+            )
             coeffs_norm = np.einsum("i,i,j,j->ij", np.ravel(self.orbitals_coeff[orbital]),
                                     norm, np.ravel(self.orbitals_coeff[orbital]), norm)
             exps_comb = exps + np.ravel(exps)
@@ -414,10 +416,14 @@ class SlaterAtoms:
 
             # Calculate [k(k + 1) - q(q-1)]r^{n+q-2.0}
             points_power = points[:, None, None]**(number_combs - 2.0)
-            first_term = np.einsum("i,kij->ijk", np.ravel(angular - number * (number - 1.0)),points_power)
+            first_term = np.einsum(
+                "i,kij->ijk", np.ravel(angular - number * (number - 1.0)), points_power
+            )
             # Calculate + 2\alpha_2 q r^{n + q - 1.0}
             points_power = points[:, None, None]**(number_combs - 1.0)
-            second_term = np.einsum("j,j,kij->ijk", 2.0 * np.ravel(exps), np.ravel(number), points_power)
+            second_term = np.einsum(
+                "j,j,kij->ijk", 2.0 * np.ravel(exps), np.ravel(number), points_power
+            )
             # Calculate - \alpha_2^2r^{n + q}
             points_power = points[:, None, None]**(number_combs)
             third_term = np.einsum("i,kij->ijk", np.ravel(exps)**2.0, points_power)
