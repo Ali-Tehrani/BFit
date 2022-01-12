@@ -117,7 +117,7 @@ def test_positive_definite_kinetic_energy_c():
 def test_positive_definite_kinetic_energy_p():
     # load be atomic wave function
     be = SlaterAtoms("p")
-    # compute density on an equally distant grid
+    # compute density on ClenshawCurtis Grid
     grid = ClenshawRadialGrid(15, 20000, 35000)
     energ = be.lagrangian_kinetic_energy(grid.points)
     integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
@@ -367,15 +367,15 @@ def test_atomic_density_heavy_rn():
 def test_kinetic_energy_cation_anion_c():
     r"""Test integral of kinetic energy density of cation/anion of carbon."""
     c = SlaterAtoms("c", cation=True)
-    grid = np.arange(0.0, 25.0, 0.0001)
-    energ = c.lagrangian_kinetic_energy(grid)
-    integral = np.trapz(energ * 4.0 * np.pi * grid**2.0, grid)
+    grid = ClenshawRadialGrid(6, 20000, 35000)
+    energ = c.lagrangian_kinetic_energy(grid.points)
+    integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
     assert_almost_equal(integral, c.kinetic_energy, decimal=6)
 
     c = SlaterAtoms("c", anion=True)
-    grid = np.arange(0.0, 40.0, 0.0001)
-    energ = c.lagrangian_kinetic_energy(grid)
-    integral = np.trapz(energ * 4.0 * np.pi * grid**2.0, grid)
+    grid = ClenshawRadialGrid(7, 20000, 35000)
+    energ = c.lagrangian_kinetic_energy(grid.points)
+    integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
     assert_almost_equal(integral, c.kinetic_energy, decimal=5)
 
 
@@ -406,9 +406,10 @@ def test_derivative_electron_density_cr():
 def test_kinetic_energy_heavy_element_ce():
     r"""Test integral of kinetic energy of cesium."""
     c = SlaterAtoms("ce")
-    grid = np.arange(0.0, 25.0, 0.0001)
-    energ = c.lagrangian_kinetic_energy(grid)
-    assert_almost_equal(np.trapz(energ * 4 * np.pi * grid**2.0, grid), c.kinetic_energy, decimal=3)
+    grid = ClenshawRadialGrid(55, 10000, 30000, include_origin=False)
+    energ = c.lagrangian_kinetic_energy(grid.points)
+    integral = 4.0 * np.pi * grid.integrate(energ * grid.points**2.0)
+    assert_almost_equal(integral, c.kinetic_energy, decimal=2)
 
 
 def test_raises():
