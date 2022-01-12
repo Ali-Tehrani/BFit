@@ -84,10 +84,10 @@ def test_points_clenshaw():
     core = [(1. - np.cos(np.pi * x / 20)) / 20. for x in range(0, 10)]
     assert_almost_equal(core, grid._get_points(10, "core"), decimal=8)
     # check diffuse points
-    diff = [25. * (1. - np.cos(np.pi * x / 40.)) for x in range(0, 20)]
+    diff = [25. * (1. - np.cos(np.pi * x / 40.)) for x in range(1, 20)]
     assert_almost_equal(diff, grid._get_points(20, "diffuse"), decimal=8)
     # check points
-    assert_almost_equal(sorted(core + diff[1:] + [1000]), grid.points, decimal=8)
+    assert_almost_equal(sorted(core + diff + [1000]), grid.points, decimal=8)
     # check assertion
     assert_raises(ValueError, grid._get_points, 10, "not core or diffuse")
 
