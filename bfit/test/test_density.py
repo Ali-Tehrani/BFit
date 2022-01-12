@@ -23,10 +23,10 @@
 r"""Test bfit.density module."""
 
 from bfit.density import SlaterAtoms
+from bfit.grid import ClenshawRadialGrid
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_equal, assert_raises
 import scipy
-from bfit.grid import ClenshawRadialGrid
 
 
 def slater(e, n, r, derivative=False):
@@ -95,6 +95,7 @@ def test_positive_definite_kinetic_energy_he():
 
 
 def test_positive_definite_kinetic_energy_li():
+    r"""Test integral of kinetic energy density of lithium against actual value."""
     # load be atomic wave function
     be = SlaterAtoms("li")
     # compute density on an equally distant grid
@@ -105,6 +106,7 @@ def test_positive_definite_kinetic_energy_li():
 
 
 def test_positive_definite_kinetic_energy_c():
+    r"""Test integral of kinetic energy density of carbon against actual value."""
     # load be atomic wave function
     be = SlaterAtoms("c")
     # compute density on an equally distant grid
@@ -115,6 +117,7 @@ def test_positive_definite_kinetic_energy_c():
 
 
 def test_positive_definite_kinetic_energy_p():
+    r"""Test integral of kinetic energy density of phosphorous against actual value."""
     # load be atomic wave function
     be = SlaterAtoms("p")
     # compute density on ClenshawCurtis Grid
@@ -125,6 +128,7 @@ def test_positive_definite_kinetic_energy_p():
 
 
 def test_positive_definite_kinetic_energy_ag():
+    r"""Test integral of kinetic energy density of silver against actual value."""
     # load c atomic wave function
     adens = SlaterAtoms("ag")
     # compute density on ClenshawCurtis Grid

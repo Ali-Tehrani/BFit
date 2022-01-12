@@ -387,8 +387,7 @@ class SlaterAtoms:
 
         Notes
         -----
-        - This sets kinetic energy value at r=zero to zero.
-        
+        - This sets kinetic energy value at :math:`r=0` to zero.
         """
         kinetic = np.zeros((len(points),))
         orbital_to_angular = {
@@ -410,7 +409,7 @@ class SlaterAtoms:
             coeffs_norm = np.einsum("i,i,j,j->ij", np.ravel(self.orbitals_coeff[orbital]),
                                     norm, np.ravel(self.orbitals_coeff[orbital]), norm)
             exps_comb = exps + np.ravel(exps)
-            exponential = np.exp(-np.einsum("ij,k->ijk", exps_comb, points))
+            exponential = np.exp(-1.0 * np.einsum("ij,k->ijk", exps_comb, points))
             combination = np.einsum("ijk,ij->ijk", exponential, coeffs_norm)
             number_combs = number + np.ravel(number)
 
